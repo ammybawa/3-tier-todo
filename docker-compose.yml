@@ -1,0 +1,59 @@
+version: '3.3'
+services:
+  frontend:
+    container_name: frontend
+    restart: always
+    build:
+      context: ./my-react-app
+      dockerfile: ./Dockerfile
+    ports:
+      - 8007:80
+    networks:
+      - localtest
+    depends_on:
+     - backend
+
+  backend:
+    container_name: backend
+    build:
+      context: /home/user/Documents/fullstack/3tier-todo/todo-backend
+      dockerfile: /home/user/Documents/fullstack/3tier-todo/todo-backend/Dockerfile
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: mysql
+      DB_USER: backenddb
+      DB_PASSWORD: Ammy@123
+      DB_DATABASE: backend
+    networks:
+      - localtest
+    depends_on:
+      - mysql
+  
+
+  mysql:
+    image: mysql
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Ammy@123
+      MYSQL_DATABASE: backend
+      MYSQL_USER: backenddb
+      MYSQL_PASSWORD: Ammy@123
+    volumes:
+     - mysqldata:/var/lib/mysql
+    networks:
+      - localtest
+    healthcheck:
+      test: [ "CMD", "mysql", "--user=backenddb", "--password=Ammy@123", "--execute", "SHOW DATABASES;" ]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mysqldata:
+
+networks:
+  localtest:
+    driver: bridge
